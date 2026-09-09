@@ -1,0 +1,91 @@
+.scroll-fade {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+
+.scroll-fade--y {
+  flex-direction: column;
+}
+
+.scroll-fade--x {
+  flex-direction: row;
+}
+
+.scroll-fade__body {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  overscroll-behavior: contain;
+}
+
+.scroll-fade--y .scroll-fade__body {
+  overflow: hidden auto;
+}
+
+.scroll-fade--x .scroll-fade__body {
+  overflow: auto hidden;
+}
+
+.scroll-fade::before,
+.scroll-fade::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity var(--duration);
+  background: linear-gradient(
+    var(--scroll-fade-direction),
+    var(--scroll-fade-color, var(--color-bg)),
+    transparent
+  );
+}
+
+.scroll-fade--y::before,
+.scroll-fade--y::after {
+  left: 0;
+  right: 0;
+  height: 36px;
+}
+
+.scroll-fade--y::before {
+  top: 0;
+  --scroll-fade-direction: to bottom;
+}
+
+.scroll-fade--y::after {
+  bottom: 0;
+  --scroll-fade-direction: to top;
+}
+
+.scroll-fade--x::before,
+.scroll-fade--x::after {
+  top: 0;
+  bottom: 0;
+  width: 36px;
+}
+
+.scroll-fade--x::before {
+  left: 0;
+  --scroll-fade-direction: to right;
+}
+
+.scroll-fade--x::after {
+  right: 0;
+  --scroll-fade-direction: to left;
+}
+
+.scroll-fade--surface {
+  --scroll-fade-color: var(--color-surface);
+  flex: none;
+}
+
+.scroll-fade--top::before,
+.scroll-fade--bottom::after,
+.scroll-fade--left::before,
+.scroll-fade--right::after {
+  opacity: 1;
+}

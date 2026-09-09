@@ -1,0 +1,164 @@
+.modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  padding: 15px;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--color-backdrop);
+}
+
+.modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  max-height: calc(100vh - 30px);
+  overflow-y: auto;
+  padding: 18px 15px 15px;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  transform-origin: 50% 0;
+}
+
+.modal-title {
+  margin: 0 0 15px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.modal-field label {
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.modal-field input,
+.modal-field textarea {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-hover);
+  outline: none;
+}
+
+.modal-field textarea {
+  min-height: 88px;
+  max-height: 220px;
+  overflow: hidden;
+  scrollbar-width: none;
+}
+
+.modal-field textarea::-webkit-scrollbar {
+  display: none;
+}
+
+.modal-field textarea.textarea-tall {
+  min-height: 160px;
+  max-height: 280px;
+}
+
+.field-hint {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.modal-text {
+  margin: 0;
+  color: var(--color-text-muted);
+}
+
+.modal-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal-option {
+  display: block;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text-muted);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    background-color var(--duration),
+    color var(--duration);
+}
+
+.modal-option:hover:not(:disabled) {
+  background: var(--color-surface-hover);
+  color: var(--color-text);
+}
+
+.modal-option--on,
+.modal-option--on:hover:not(:disabled) {
+  background: var(--color-surface-active);
+  color: var(--color-text);
+}
+
+.modal-option:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.modal-actions button {
+  flex: 1;
+  height: 42px;
+  border: none;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-hover);
+  cursor: pointer;
+  transition:
+    background-color var(--duration),
+    color var(--duration);
+}
+
+.modal-actions button:hover:not(:disabled) {
+  background: var(--color-surface-active);
+}
+
+.modal-actions button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.modal-actions .modal-primary {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.modal-actions .modal-primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.modal-actions .modal-danger:hover:not(:disabled) {
+  color: var(--color-danger);
+}

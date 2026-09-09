@@ -1,0 +1,11 @@
+[[permission]]
+identifier = "allow-opened-file"
+commands.allow = ["take_opened_file"]
+
+[[permission]]
+identifier = "allow-updates"
+commands.allow = ["check_update", "install_update", "apply_update"]
+
+[[permission]]
+identifier = "allow-show-main-window"
+commands.allow = ["show_main_window"]

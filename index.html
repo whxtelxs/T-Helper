@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      html {
+        background: #121212;
+        color-scheme: dark;
+      }
+      html[data-theme="light"] {
+        background: #f7f7f8;
+        color-scheme: light;
+      }
+    </style>
+    <script>
+      try {
+        const settings = JSON.parse(localStorage.getItem("t-helper-settings"));
+        document.documentElement.dataset.theme =
+          settings?.theme === "light" &&
+          (settings.operatorGender === "male" || settings.operatorGender === "female")
+            ? "light"
+            : "dark";
+      } catch {}
+    </script>
+    <title>T-Helper</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

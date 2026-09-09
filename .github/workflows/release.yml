@@ -1,0 +1,195 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm check
+      - run: pnpm build
+
+  draft:
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      tag: ${{ steps.meta.outputs.tag }}
+      version: ${{ steps.meta.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+      - id: meta
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          TAG="v${VERSION}"
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+
+          if gh release view "$TAG" --repo "${{ github.repository }}" >/dev/null 2>&1; then
+            IS_DRAFT="$(gh release view "$TAG" --repo "${{ github.repository }}" --json isDraft -q .isDraft)"
+            if [ "$IS_DRAFT" = "false" ]; then
+              echo "Релиз ${TAG} уже опубликован. Подними версию в package.json, Cargo.toml и tauri.conf.json."
+              exit 1
+            fi
+            echo "Черновик ${TAG} уже есть — можно править текст."
+            exit 0
+          fi
+
+          gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
+            --draft \
+            --target "${{ github.sha }}" \
+            --title "T-Helper ${TAG}" \
+            --notes "$(cat <<'EOF'
+          Привет!
+
+          Не забывай, что для установки на MacOS, необходимо воспользоваться инструкцией в репозитории.
+
+          Приятного использования!💛
+          EOF
+          )"
+
+  windows:
+    if: github.event_name != 'pull_request'
+    runs-on: windows-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tauri build --no-bundle
+      - name: Pack Velopack
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./package.json').version")"
+          dotnet tool update -g vpk --version 1.2.0
+          STAGE="src-tauri/target/release/velopack-stage"
+          mkdir -p "$STAGE"
+          cp "src-tauri/target/release/t-helper.exe" "$STAGE/T-Helper.exe"
+          vpk download github \
+            --repoUrl https://github.com/whxtelxs/T-Helper \
+            --token "$GITHUB_TOKEN" \
+            --outputDir velopack-out || true
+          vpk pack \
+            --packId thelper \
+            --packVersion "$VERSION" \
+            --packDir "$STAGE" \
+            --mainExe T-Helper.exe \
+            --packTitle "T-Helper" \
+            --packAuthors whxtelxs \
+            --icon src-tauri/icons/icon.ico \
+            --splashImage src-tauri/windows/splash.png \
+            --splashProgressColor None \
+            --noPortable \
+            --outputDir velopack-out
+          mv velopack-out/thelper-win-Setup.exe "velopack-out/T-Helper_${VERSION}_x64-setup.exe"
+          mkdir -p dist-win
+          cp "velopack-out/T-Helper_${VERSION}_x64-setup.exe" dist-win/
+          cp "velopack-out/thelper-${VERSION}-full.nupkg" dist-win/
+          cp "velopack-out/releases.win.json" dist-win/
+          if [[ -f "velopack-out/thelper-${VERSION}-delta.nupkg" ]]; then
+            cp "velopack-out/thelper-${VERSION}-delta.nupkg" dist-win/
+          fi
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist-win/*
+          if-no-files-found: error
+
+  macos:
+    if: github.event_name != 'pull_request'
+    runs-on: macos-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          cache: pnpm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin
+      - uses: swatinem/rust-cache@v2
+        with:
+          workspaces: ./src-tauri -> target
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm tauri build --target aarch64-apple-darwin
+      - name: Collect macOS artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p dist-mac
+          find src-tauri/target -type f \( -name "*.dmg" -o -name "*.app.tar.gz" -o -name "*.app.tar.gz.sig" \) -exec cp {} dist-mac/ \;
+          ls -la dist-mac
+          test -n "$(ls -A dist-mac)"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: macos
+          path: dist-mac/*
+          if-no-files-found: error
+
+  publish:
+    if: github.event_name != 'pull_request'
+    needs: [frontend, draft, windows, macos]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Upload assets and publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.draft.outputs.tag }}
+        run: |
+          set -euo pipefail
+          count="$(find artifacts -type f | wc -l)"
+          if [ "$count" -eq 0 ]; then
+            echo "Нет артефактов для загрузки"
+            exit 1
+          fi
+          find artifacts -type f -exec gh release upload "$TAG" \
+            --repo "${{ github.repository }}" \
+            --clobber \
+            {} +
+          gh release edit "$TAG" \
+            --repo "${{ github.repository }}" \
+            --draft=false

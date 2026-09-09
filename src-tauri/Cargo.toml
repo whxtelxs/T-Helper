@@ -1,0 +1,26 @@
+[package]
+name = "t-helper"
+version = "1.2.0"
+description = "Desktop helper for T-Bank support operators"
+authors = ["whxtelxs"]
+license = "MIT"
+edition = "2021"
+
+[lib]
+name = "t_helper_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+ureq = "3.4"
+url = "2"
+serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+tauri = { version = "2", features = [] }
+tauri-plugin-opener = "2"
+velopack = { version = "1.2", features = ["public-utils"] }
+
+[target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
+tauri-plugin-single-instance = "2"

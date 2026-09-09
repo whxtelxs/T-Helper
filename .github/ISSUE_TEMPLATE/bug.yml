@@ -1,0 +1,87 @@
+name: Баг
+description: Что-то сломалось или работает не так
+title: "[Баг] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Кратко опиши, что случилось.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: Что произошло
+      placeholder: При импорте .thelp окно зависает, фразы не появляются…
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Как должно быть
+      placeholder: Файл импортируется, ситуации и фразы на месте.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Как повторить
+      placeholder: |
+        1. Открыть T-Helper
+        2. …
+        3. …
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Система
+      options:
+        - Windows 10
+        - Windows 11
+        - macOS
+        - Другое
+    validations:
+      required: true
+
+  - type: input
+    id: os-version
+    attributes:
+      label: Версия системы
+      description: Если знаешь.
+      placeholder: 24H2, macOS 15.2…
+
+  - type: input
+    id: app-version
+    attributes:
+      label: Версия T-Helper
+      description: Если не знаешь - оставь пустым.
+      placeholder: 1.0.1
+
+  - type: dropdown
+    id: install
+    attributes:
+      label: Как установлено
+      options:
+        - Setup.exe (Velopack)
+        - DMG (macOS)
+        - Сборка из исходников
+        - Не знаю
+
+  - type: dropdown
+    id: first-time
+    attributes:
+      label: Так было сразу или после обновления
+      options:
+        - Сразу после установки
+        - После обновления
+        - Не помню
+
+  - type: textarea
+    id: extra
+    attributes:
+      label: Скриншоты и детали
+      description: Скрин, текст ошибки, что ещё открыто в приложении.

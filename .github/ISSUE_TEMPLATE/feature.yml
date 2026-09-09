@@ -1,0 +1,43 @@
+name: Предложение
+description: Идея, улучшение или новый функционал
+title: "[Предложение] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Опиши задачу, а не только кнопку. Чем конкретнее - тем проще понять, нужно ли это в T-Helper.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какую задачу закрывает
+      placeholder: Сейчас чтобы… приходится… Это мешает, потому что…
+    validations:
+      required: true
+
+  - type: textarea
+    id: idea
+    attributes:
+      label: Как это может выглядеть
+      placeholder: В меню появляется… При экспорте можно… На Mac хотелось бы…
+    validations:
+      required: true
+
+  - type: textarea
+    id: now
+    attributes:
+      label: Что есть сейчас
+      placeholder: Этого нет / делается вручную / обход такой-то.
+
+  - type: dropdown
+    id: platform
+    attributes:
+      label: Где это нужно
+      options:
+        - Windows и macOS
+        - Только Windows
+        - Только macOS
+        - Не важно
+    validations:
+      required: true
